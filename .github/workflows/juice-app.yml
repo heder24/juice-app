@@ -130,12 +130,12 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        args: --sarif-file-output=snyk.scan.sarif
-        # sarif: false
+        args: --sarif-file-output=snyk.scan
+        sarif: false
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
       with:
-        sarif_file: snyk.scan.sarif
+        sarif_file: snyk.scan
 
   
     # - name: Run Trivy vulnerability scanner in IaC mode
