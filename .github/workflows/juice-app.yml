@@ -130,7 +130,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        args: --severity-threshold=high|critical
+        args: --sarif-file-output=snyk.sarif
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
       with:
@@ -179,6 +179,7 @@ jobs:
       if: ${{ env.destroy == 'true' }} 
       #if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
       run: terraform destroy -auto-approve -input=false
+      
 
 
 
