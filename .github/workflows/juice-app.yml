@@ -179,7 +179,7 @@ jobs:
         destroy: true
       if: ${{ env.destroy == 'true' }} 
       #if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
-      run: terraform destroy -auto-approve -input=
+      run: terraform destroy -auto-approve -input=true
       
 
 
