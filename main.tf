@@ -318,23 +318,100 @@ module "alb" {
   source  = "app.terraform.io/heder24/alb/aws"
   version = "1.0.0"
 
+ 
+ 
+ 
   name = local.name
 
   load_balancer_type = "application"
 
-  vpc_id          = module.vpc.vpc_id
-  subnets         = module.vpc.public_subnets
+  vpc_id  = module.vpc.vpc_id
+  subnets = module.vpc.public_subnets
   security_groups = [module.public_sg.security_group_id]
-
+  
   http_tcp_listeners = [
-
+ 
     {
       port        = 80
       protocol    = "HTTP"
-      action_type = "forward"
+      action_type = "redirect"
+      redirect = {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
     },
   ]
 
+  https_listeners = [
+    {
+      port               = 443
+      protocol           = "HTTPS"
+      certificate_arn    = module.acm.acm_certificate_arn
+      target_group_index = 0
+      action_type        = "fixed-response"
+      fixed_response = {
+        content_type = "text/plain"
+        message_body = ""
+        status_code  = "404"
+      }
+    },
+
+  ]
+
+  https_listener_rules = [
+    {
+      https_listener_index = 0
+      # priority             = 1
+      actions = [
+        {
+          type       = "forward"
+          target_group_index = 0
+        }
+      ]
+      conditions = [{
+        host_headers = [var.prod_domain_name, var.domain_name]
+
+        
+      }]
+      
+    },
+
+{
+      https_listener_index = 0
+      # priority             = 1
+      actions = [
+        {
+          type       = "forward"
+          target_group_index = 0
+        }
+      ]
+      conditions = [{
+        host_headers = [var.stage_domain_name, var.host_header_stage_domain_name]
+
+        
+      }]
+      
+    },
+{
+      https_listener_index = 0
+      # priority             = 1
+      actions = [
+        {
+          type       = "forward"
+          target_group_index = 0
+        }
+      ]
+      conditions = [{
+        host_headers = [var.qa_domain_name, var.host_header_qa_domain_name]
+
+        
+      }]
+      
+    },
+  ]
+
+   
   target_groups = [
     {
       name_prefix                       = "prod"
@@ -352,15 +429,32 @@ module "alb" {
         unhealthy_threshold = 3
         timeout             = 6
         protocol            = "HTTP"
-
+        matcher             = "200-399"
       }
+      
+
+
       tags = {
         InstanceTargetGroupTag = "prod"
       }
     },
   ]
+
+
   lb_tags = {
     MyLoadBalancer = "prod-lb"
+  }
+
+  https_listener_rules_tags = {
+    MyLoadBalancerHTTPSListenerRule = "prod-listener"
+  }
+
+  https_listeners_tags = {
+    MyLoadBalancerHTTPSListener = "prod-listener"
+  }
+
+  http_tcp_listeners_tags = {
+    MyLoadBalancerTCPListener = "prod-listener"
   }
 
 }
