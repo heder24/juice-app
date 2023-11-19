@@ -284,6 +284,33 @@ module "dns_records" {
 }
 
 ##################################################################
+#acm
+
+module "acm" {
+  source  = "app.terraform.io/heder24/acm/aws"
+  version = "1.0.0"
+
+
+providers = {
+    aws.acm = aws,
+    aws.dns = aws
+  }
+
+  domain_name = local.domain_name
+  zone_id     = local.zone_id
+  
+
+  subject_alternative_names = [
+    "www.qa.${local.domain_name}",
+    "www.stage.${local.domain_name}",
+    "*.${local.domain_name}",
+  ]
+
+  tags = {
+    Name = local.domain_name
+  }
+}
+##################################################################
 # Application Load Balancer
 ##################################################################
 
